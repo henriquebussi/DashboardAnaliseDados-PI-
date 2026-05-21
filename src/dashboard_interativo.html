@@ -31,7 +31,6 @@
     overflow-x: hidden;
   }
 
-  /* ── HEADER ── */
   header {
     position: sticky; top: 0; z-index: 100;
     height: var(--header-h);
@@ -56,12 +55,9 @@
     letter-spacing: 0.5px;
   }
   .spacer { flex: 1; }
-  #record-count {
-    font-size: 12px; color: var(--muted);
-  }
+  #record-count { font-size: 12px; color: var(--muted); }
   #record-count strong { color: var(--accent); }
 
-  /* ── FILTER BAR ── */
   .filter-bar {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -99,27 +95,16 @@
     font-size: 10px; color: var(--muted);
     width: 180px;
   }
-  #age-range-val {
-    font-size: 11px; color: var(--accent);
-    align-self: flex-end; margin-bottom: 2px;
-  }
+  #age-range-val { font-size: 11px; color: var(--accent); align-self: flex-end; margin-bottom: 2px; }
 
-  .checkbox-group {
-    display: flex; flex-direction: column; gap: 6px;
-  }
+  .checkbox-group { display: flex; flex-direction: column; gap: 6px; }
   .checkbox-group label.group-label {
     font-size: 10px; color: var(--muted);
     text-transform: uppercase; letter-spacing: 1px;
   }
   .checkbox-row { display: flex; gap: 12px; }
-  .checkbox-item {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 12px; cursor: pointer;
-  }
-  .checkbox-item input[type="checkbox"] {
-    accent-color: var(--accent2);
-    width: 14px; height: 14px; cursor: pointer;
-  }
+  .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; }
+  .checkbox-item input[type="checkbox"] { accent-color: var(--accent2); width: 14px; height: 14px; cursor: pointer; }
 
   .btn-reset {
     background: transparent;
@@ -132,7 +117,6 @@
   }
   .btn-reset:hover { border-color: var(--accent2); color: var(--accent2); }
 
-  /* ── MAIN LAYOUT ── */
   main { padding: 28px 32px; display: flex; flex-direction: column; gap: 28px; }
 
   .section-title {
@@ -146,7 +130,6 @@
   }
   .section-title.pair { border-color: var(--accent2); }
 
-  /* ── KPI STRIP ── */
   .kpi-strip {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 12px;
@@ -162,7 +145,6 @@
   .kpi-value { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; color: var(--text); }
   .kpi-sub { font-size: 11px; color: var(--muted); }
 
-  /* ── CHART GRID ── */
   .chart-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
   .chart-grid-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; }
   .chart-grid-1 { display: grid; grid-template-columns: 1fr; }
@@ -177,10 +159,7 @@
     border-color: var(--accent3);
     box-shadow: 0 0 20px rgba(92,142,240,0.08);
   }
-  .chart-title {
-    font-size: 11px; color: var(--muted); margin-bottom: 12px;
-    text-transform: uppercase; letter-spacing: 1px;
-  }
+  .chart-title { font-size: 11px; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
   .plot-container { width: 100%; height: 240px; }
   .plot-container.tall { height: 300px; }
   .plot-container.xtall { height: 380px; }
@@ -194,7 +173,7 @@
 <body>
 
 <header>
-  <div class="logo">Patient<span>Analytics</span></div>
+  <div class="logo">HealthMap <span>Pompéia</span></div>
   <div class="badge">INTERATIVO</div>
   <div class="spacer"></div>
   <div id="record-count">Carregando...</div>
@@ -294,9 +273,8 @@
 </main>
 
 <script>
-// 1. VARIÁVEIS GLOBAIS E MAPEAMENTO DE CORES
-let RAW = []; 
-let initialized = false;
+// ── GLOBALS ──
+let RAW = [];
 const SEXOS = ["MASCULINO", "FEMININO", "OUTRO/NÃO INFORMADO"];
 const COLOR_MAP = {
   "MASCULINO": "#5c8ef0",
@@ -304,7 +282,7 @@ const COLOR_MAP = {
   "OUTRO/NÃO INFORMADO": "#6b7394"
 };
 
-// 2. ESTADO DO FILTRO
+// ── FILTER STATE ──
 let filterState = {
   cidade: "all",
   bairro: "all",
@@ -319,15 +297,14 @@ function applyFilters() {
     if (filterState.cidade !== "all" && r.cidade !== filterState.cidade) return false;
     if (filterState.bairro !== "all" && r.bairro  !== filterState.bairro) return false;
     if (filterState.faixa  !== "all" && r.faixa_etaria !== filterState.faixa) return false;
-    // Ignora restrição de idade para valores nulos para não escondê-los caso a pessoa ajuste o slider
-    if (r.idade !== null && (r.idade < filterState.ageMin || r.idade > filterState.ageMax)) return false;
+    if (r.idade !== null && r.idade !== undefined && (r.idade < filterState.ageMin || r.idade > filterState.ageMax)) return false;
     if (!filterState.sexos.has(r.sexo)) return false;
     return true;
   });
 }
 
 function populateDropdowns() {
-  const cities = [...new Set(RAW.map(r => r.cidade))].sort();
+  const cities  = [...new Set(RAW.map(r => r.cidade))].sort();
   const bairros = [...new Set(RAW.map(r => r.bairro))].sort();
 
   const cidSel = document.getElementById("filter-cidade");
@@ -337,7 +314,7 @@ function populateDropdowns() {
   bairros.forEach(b => baiSel.appendChild(new Option(b, b)));
 }
 
-// 4. PLOTLY HELPERS
+// ── PLOTLY HELPERS ──
 const PLOT_LAYOUT_BASE = {
   paper_bgcolor: "transparent",
   plot_bgcolor:  "transparent",
@@ -362,22 +339,39 @@ function countBy(arr, key) {
   return m;
 }
 
-// 5. RENDERIZAÇÃO DE TODOS OS GRÁFICOS
+// ── CORREÇÃO: sempre purge + newPlot para evitar erros após filtros ──
+function safePlot(id, traces, layout) {
+  Plotly.purge(id);
+  Plotly.newPlot(id, traces, layout, CONFIG);
+}
+
+// ── CORREÇÃO: função de correlação corrigida ──
+function corr(a, b) {
+  const n = a.length;
+  if (n === 0) return 0;
+  const ma = a.reduce((s, v) => s + v, 0) / n;
+  const mb = b.reduce((s, v) => s + v, 0) / n;
+  const num = a.reduce((s, v, i) => s + (v - ma) * (b[i] - mb), 0);
+  const da  = Math.sqrt(a.reduce((s, v) => s + (v - ma) ** 2, 0));
+  const db  = Math.sqrt(b.reduce((s, v) => s + (v - mb) ** 2, 0));
+  return (da && db) ? +(num / (da * db)).toFixed(3) : 0;
+}
+
+// ── RENDER ──
 function render() {
   const df = applyFilters();
 
-  // ── KPIs (Filtrando idades nulas para não dar NaN na média) ──
-  const total = df.length;
-  const validAges = df.map(r => r.idade).filter(i => i !== null && !isNaN(i));
-  const mean = validAges.length ? (validAges.reduce((a,b)=>a+b,0)/validAges.length).toFixed(1) : "—";
-  const sorted = [...validAges].sort((a,b)=>a-b);
-  const median = validAges.length ? sorted[Math.floor(sorted.length/2)] : "—";
-  
-  const masc = df.filter(r => r.sexo === "MASCULINO").length;
-  const fem  = df.filter(r => r.sexo === "FEMININO").length;
-  const pctMasc = total ? ((masc/total)*100).toFixed(1) + "%" : "—";
-  const pctFem  = total ? ((fem/total)*100).toFixed(1) + "% Feminino" : "—";
-  
+  // KPIs
+  const total     = df.length;
+  const validAges = df.map(r => r.idade).filter(i => i !== null && i !== undefined && !isNaN(i));
+  const mean      = validAges.length ? (validAges.reduce((a, b) => a + b, 0) / validAges.length).toFixed(1) : "—";
+  const sorted    = [...validAges].sort((a, b) => a - b);
+  const median    = validAges.length ? sorted[Math.floor(sorted.length / 2)] : "—";
+  const masc      = df.filter(r => r.sexo === "MASCULINO").length;
+  const fem       = df.filter(r => r.sexo === "FEMININO").length;
+  const pctMasc   = total ? ((masc / total) * 100).toFixed(1) + "%" : "—";
+  const pctFem    = total ? ((fem  / total) * 100).toFixed(1) + "% Feminino" : "—";
+
   document.getElementById("kpi-total").textContent   = total.toLocaleString("pt-BR");
   document.getElementById("kpi-media").textContent   = mean;
   document.getElementById("kpi-median").textContent  = median;
@@ -388,119 +382,124 @@ function render() {
   document.getElementById("record-count").innerHTML  = `<strong>${total.toLocaleString("pt-BR")}</strong> registros filtrados`;
 
   // ── HISTOGRAM: Idade ──
-  Plotly[initialized ? "react" : "newPlot"]("plot-idade",
-    [{ type: "histogram", x: validAges, nbinsx: 30, name: "Idade", marker: { color: "#5cf0b0", opacity: 0.8 } }],
-    patchLayout({ margin: { t:10,b:36,l:44,r:10 } }), CONFIG);
+  safePlot("plot-idade",
+    [{ type: "histogram", x: validAges, nbinsx: 30, name: "Idade",
+       marker: { color: "#5cf0b0", opacity: 0.8 } }],
+    patchLayout({ margin: { t: 10, b: 36, l: 44, r: 10 } }));
 
   // ── BAR: Sexo ──
-  const sexMap = countBy(df, "sexo");
-  const sexKeys = Object.keys(sexMap);
-  const sexVals = Object.values(sexMap);
-  const barColors = sexKeys.map(k => COLOR_MAP[k] || "#ffffff");
-
-  Plotly[initialized ? "react" : "newPlot"]("plot-sexo",
-    [{ type: "bar", x: sexKeys, y: sexVals, marker: { color: barColors }, name: "Sexo" }],
-    patchLayout({}), CONFIG);
+  // CORREÇÃO: categorias fixas + xaxis.type="category" para não colapsar quando uma categoria some
+  const sexOrder  = ["MASCULINO", "FEMININO", "OUTRO/NÃO INFORMADO"];
+  const sexMap    = countBy(df, "sexo");
+  const sexVals   = sexOrder.map(k => sexMap[k] || 0);
+  const barColors = sexOrder.map(k => COLOR_MAP[k] || "#6b7394");
+  safePlot("plot-sexo",
+    [{ type: "bar", x: sexOrder, y: sexVals, marker: { color: barColors }, name: "Sexo" }],
+    patchLayout({ xaxis: { type: "category", gridcolor: "#2a2f42", zerolinecolor: "#2a2f42" } }));
 
   // ── BAR: Faixa Etária ──
-  const feOrder = ["0-12","13-17","18-35","36-59","60+", "NÃO INFORMADO"];
-  const feMap = countBy(df, "faixa_etaria");
-  Plotly[initialized ? "react" : "newPlot"]("plot-faixa",
-    [{ type: "bar", x: feOrder, y: feOrder.map(k => feMap[k] || 0), marker: { color: "#c45cf0", opacity: 0.85 }, name: "F. Etária" }],
-    patchLayout({}), CONFIG);
+  // CORREÇÃO: xaxis.type="category" garante eixo estável mesmo com valores zero
+  const feOrder = ["0-12", "13-17", "18-35", "36-59", "60+", "NÃO INFORMADO"];
+  const feMap   = countBy(df, "faixa_etaria");
+  safePlot("plot-faixa",
+    [{ type: "bar", x: feOrder, y: feOrder.map(k => feMap[k] || 0),
+       marker: { color: "#c45cf0", opacity: 0.85 }, name: "F. Etária" }],
+    patchLayout({ xaxis: { type: "category", gridcolor: "#2a2f42", zerolinecolor: "#2a2f42" } }));
 
-  // ── HEATMAP: Correlação (Requer dados válidos) ──
-  const validDf = df.filter(r => r.idade !== null && r.ano_nascimento !== null);
+  // ── HEATMAP: Correlação ──
+  const validDf = df.filter(r => r.idade !== null && r.idade !== undefined &&
+                                  r.ano_nascimento !== null && r.ano_nascimento !== undefined);
   const idades = validDf.map(r => r.idade);
   const anos   = validDf.map(r => r.ano_nascimento);
   const isMasc = validDf.map(r => r.sexo === "MASCULINO" ? 1 : 0);
+  const vecs   = [idades, anos, isMasc];
+  const vars   = ["idade", "ano_nasc", "is_masc"];
+  // CORREÇÃO: corr(vecs[i], vecs[j]) — ambos usando os vetores corretos
+  const corMat = vecs.map((vi) => vecs.map((vj) => corr(vi, vj)));
 
-  function corr(a, b) {
-    if (!a.length) return 0;
-    const ma = a.reduce((s,v)=>s+v,0)/a.length;
-    const mb = b.reduce((s,v)=>s+v,0)/b.length;
-    const num = a.reduce((s,v,i)=>s+(v-ma)*(b[i]-mb),0);
-    const da  = Math.sqrt(a.reduce((s,v)=>s+(v-ma)**2,0));
-    const db  = Math.sqrt(b.reduce((s,v)=>s+(v-mb)**2,0));
-    return (da&&db) ? num/(da*db) : 0;
-  }
-
-  const vars = ["idade","ano_nasc","is_masc"];
-  const vecs = [idades, anos, isMasc];
-  const corMat = vars.map((_,i) => vars.map((_,j) => +corr(vecs[i],vecs[j]).toFixed(3)));
-
-  Plotly[initialized ? "react" : "newPlot"]("plot-heatmap",
-    [{ type: "heatmap", z: corMat, x: vars, y: vars, colorscale: "RdBu", zmin: -1, zmax: 1, showscale: true,
+  safePlot("plot-heatmap",
+    [{ type: "heatmap", z: corMat, x: vars, y: vars, colorscale: "RdBu", zmin: -1, zmax: 1,
+       showscale: true,
        colorbar: { len: 0.6, thickness: 12, outlinewidth: 0, tickfont: { size: 9, color: "#6b7394" } } }],
-    patchLayout({ margin: { t:10,b:40,l:60,r:10 } }), CONFIG);
+    patchLayout({ margin: { t: 10, b: 40, l: 60, r: 10 } }));
 
   // ── BOXPLOT: Idade por Cidade × Sexo ──
   const boxTraces = SEXOS.map(s => {
     const sub = validDf.filter(r => r.sexo === s);
     return {
-      type: "box", y: sub.map(r=>r.idade), x: sub.map(r=>r.cidade_top),
-      name: s, offsetgroup: s,
-      marker: { color: COLOR_MAP[s] }, line: { color: COLOR_MAP[s] }, fillcolor: COLOR_MAP[s] + "44",
+      type: "box",
+      y: sub.map(r => r.idade),
+      x: sub.map(r => r.cidade_top),
+      name: s,
+      offsetgroup: s,
+      marker:    { color: COLOR_MAP[s] },
+      line:      { color: COLOR_MAP[s] },
+      fillcolor: COLOR_MAP[s] + "44",
     };
   });
-  Plotly[initialized ? "react" : "newPlot"]("plot-box", boxTraces,
-    patchLayout({ boxmode: "group", margin: { t:10,b:60,l:44,r:10 } }), CONFIG);
+  safePlot("plot-box", boxTraces,
+    patchLayout({ boxmode: "group", margin: { t: 10, b: 60, l: 44, r: 10 } }));
 
-  // ── BAR: Top 10 Bairros (CORREÇÃO DA IMAGEM AQUI) ──
-  const bairroMap = countBy(df, "bairro");
-  // Ordenar pelo valor (índice 1)
-  const bairroSorted = Object.entries(bairroMap).sort((a,b)=>b-a).slice(0,10);
-  
-  // EXTRAIR EXPLICITAMENTE Nomes (Eixo X) e Volumes (Eixo Y)
-  const bairrosNomes = bairroSorted.map(e => e);
-  const bairrosVolumes = bairroSorted.map(e => e);
+  // ── BAR: Top 10 Bairros ──
+  // CORREÇÃO: sort por índice [1] e map com índice correto [0] e [1]
+  const bairroMap    = countBy(df, "bairro");
+  const bairroSorted = Object.entries(bairroMap)
+                         .sort((a, b) => b[1] - a[1])   // CORREÇÃO: b[1] - a[1]
+                         .slice(0, 10);
+  const bairrosNomes   = bairroSorted.map(e => e[0]);    // CORREÇÃO: e[0]
+  const bairrosVolumes = bairroSorted.map(e => e[1]);    // CORREÇÃO: e[1]
 
-  Plotly[initialized ? "react" : "newPlot"]("plot-bairros",
-    [{ 
-       type: "bar",
-       x: bairrosNomes,
-       y: bairrosVolumes,
-       marker: { color: bairrosNomes.map((_,i) => `hsl(${340 - i*22},70%,60%)`) }, 
-       name: "Bairros" 
+  safePlot("plot-bairros",
+    [{
+      type: "bar",
+      x: bairrosNomes,
+      y: bairrosVolumes,
+      marker: { color: bairrosNomes.map((_, i) => `hsl(${340 - i * 22},70%,60%)`) },
+      name: "Bairros",
+      text: bairrosVolumes.map(String),
+      textposition: "outside",
     }],
-    patchLayout({ 
-      margin: { t:10, b:80, l:44, r:10 },
-      xaxis: { type: 'category', tickangle: -35, gridcolor:"#2a2f42", zerolinecolor:"#2a2f42" },
-      yaxis: { type: 'linear', gridcolor:"#2a2f42", zerolinecolor:"#2a2f42" }
-    }), CONFIG);
+    patchLayout({
+      margin: { t: 10, b: 80, l: 44, r: 10 },
+      xaxis: { type: "category", tickangle: -35, gridcolor: "#2a2f42", zerolinecolor: "#2a2f42" },
+      yaxis: { type: "linear",   gridcolor: "#2a2f42", zerolinecolor: "#2a2f42" },
+    }));
 
-  // ── PAIRPLOT: Scatter Matrix (CORREÇÃO DE SPLOM) ──
-  // Splom precisa de dados numéricos. Vamos mapear "cidade_top" para índice numérico
-  const uniqueCities = [...new Set(validDf.map(r=>r.cidade_top))];
+  // ── PAIRPLOT: Scatter Matrix ──
+  const uniqueCities = [...new Set(validDf.map(r => r.cidade_top))];
   const pairByGender = SEXOS.map(s => {
     const sub = validDf.filter(r => r.sexo === s);
     return {
       type: "splom",
       dimensions: [
-        { label: "Idade",      values: sub.map(r=>r.idade) },
-        { label: "Ano Nasc.", values: sub.map(r=>r.ano_nascimento) },
-        { label: "Cidade",    values: sub.map(r=> uniqueCities.indexOf(r.cidade_top)) }
+        { label: "Idade",     values: sub.map(r => r.idade) },
+        { label: "Ano Nasc.", values: sub.map(r => r.ano_nascimento) },
+        { label: "Cidade",   values: sub.map(r => uniqueCities.indexOf(r.cidade_top)) },
       ],
-      text: sub.map(r => r.cidade_top), // Mostrar o nome da cidade no Hover
+      text: sub.map(r => r.cidade_top),
       name: s,
       showupperhalf: false,
-      marker: { color: COLOR_MAP[s], size: 4, opacity: 0.55, line: { width: 0.5, color: COLOR_MAP[s] } },
+      marker: {
+        color: COLOR_MAP[s], size: 4, opacity: 0.55,
+        line: { width: 0.5, color: COLOR_MAP[s] },
+      },
     };
   });
-
-  Plotly[initialized ? "react" : "newPlot"]("plot-pair", pairByGender,
-    Object.assign({}, PLOT_LAYOUT_BASE, { height: 380, margin: { t: 20, b: 40, l: 60, r: 20 }, dragmode: "select" }), CONFIG);
-
-  initialized = true;
+  safePlot("plot-pair", pairByGender,
+    Object.assign({}, PLOT_LAYOUT_BASE, {
+      height: 380,
+      margin: { t: 20, b: 40, l: 60, r: 20 },
+      dragmode: "select",
+    }));
 }
 
-// 6. EVENT LISTENERS
+// ── EVENT LISTENERS ──
 document.getElementById("filter-cidade").addEventListener("change", e => { filterState.cidade = e.target.value; render(); });
 document.getElementById("filter-bairro").addEventListener("change", e => { filterState.bairro = e.target.value; render(); });
-document.getElementById("filter-faixa").addEventListener("change", e => { filterState.faixa = e.target.value; render(); });
+document.getElementById("filter-faixa").addEventListener("change",  e => { filterState.faixa  = e.target.value; render(); });
 
-const ageMinEl = document.getElementById("filter-age-min");
-const ageMaxEl = document.getElementById("filter-age-max");
+const ageMinEl  = document.getElementById("filter-age-min");
+const ageMaxEl  = document.getElementById("filter-age-max");
 const ageMinLbl = document.getElementById("age-range-val");
 const ageMaxLbl = document.getElementById("age-range-max-val");
 
@@ -519,40 +518,47 @@ function toggleSexo(val, checked) {
   checked ? filterState.sexos.add(val) : filterState.sexos.delete(val);
   render();
 }
-document.getElementById("chk-masc").addEventListener("change", e => toggleSexo("MASCULINO", e.target.checked));
-document.getElementById("chk-fem").addEventListener("change", e => toggleSexo("FEMININO", e.target.checked));
+document.getElementById("chk-masc").addEventListener("change",  e => toggleSexo("MASCULINO", e.target.checked));
+document.getElementById("chk-fem").addEventListener("change",   e => toggleSexo("FEMININO",  e.target.checked));
 document.getElementById("chk-outro").addEventListener("change", e => toggleSexo("OUTRO/NÃO INFORMADO", e.target.checked));
 
 function resetFilters() {
-  filterState = { cidade:"all", bairro:"all", faixa:"all", ageMin:0, ageMax:120, sexos: new Set(SEXOS) };
+  filterState = { cidade: "all", bairro: "all", faixa: "all", ageMin: 0, ageMax: 120, sexos: new Set(SEXOS) };
   document.getElementById("filter-cidade").value = "all";
   document.getElementById("filter-bairro").value = "all";
   document.getElementById("filter-faixa").value  = "all";
   ageMinEl.value = 0; ageMaxEl.value = 120;
   ageMinLbl.textContent = "0"; ageMaxLbl.textContent = "120";
-  document.getElementById("chk-masc").checked = true;
-  document.getElementById("chk-fem").checked  = true;
+  document.getElementById("chk-masc").checked  = true;
+  document.getElementById("chk-fem").checked   = true;
   document.getElementById("chk-outro").checked = true;
   render();
 }
 
-// 7. INIT 
+// ── INIT ──
 async function loadData() {
   try {
     const res = await fetch("pacientes_data.json");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     RAW = await res.json();
 
+    // CORREÇÃO: top5 deve ser array de strings (nomes de cidade), não array de arrays
     const cityCount = {};
-    RAW.forEach(r => cityCount[r.cidade] = (cityCount[r.cidade] || 0) + 1);
-    const top5 = Object.entries(cityCount).sort((a,b)=>b-a).slice(0,5).map(e=>e);
-    
-    RAW.forEach(r => r.cidade_top = top5.includes(r.cidade) ? r.cidade : "OUTROS");
+    RAW.forEach(r => { cityCount[r.cidade] = (cityCount[r.cidade] || 0) + 1; });
+    const top5 = Object.entries(cityCount)
+                   .sort((a, b) => b[1] - a[1])
+                   .slice(0, 5)
+                   .map(e => e[0]);              // CORREÇÃO: .map(e => e[0])
+
+    RAW.forEach(r => {
+      r.cidade_top = top5.includes(r.cidade) ? r.cidade : "OUTROS";
+    });
 
     populateDropdowns();
     render();
   } catch (error) {
-    console.error("Failed to load patient data:", error);
-    document.getElementById("record-count").textContent = "Erro ao carregar dados";
+    console.error("Falha ao carregar dados:", error);
+    document.getElementById("record-count").textContent = "Erro ao carregar pacientes_data.json";
   }
 }
 
